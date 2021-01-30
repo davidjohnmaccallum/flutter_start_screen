@@ -66,6 +66,9 @@ flutter:
     - family: DancingScript
       fonts:
         - asset: assets/fonts/DancingScript-VariableFont_wght.ttf
+    - family: Lato
+      fonts:
+        - asset: assets/fonts/Lato-Regular.ttf
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf
