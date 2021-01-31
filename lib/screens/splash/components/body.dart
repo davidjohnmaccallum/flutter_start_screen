@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:start_screen/components/default_button.dart';
 import 'package:start_screen/constants.dart';
+import 'package:start_screen/screens/media_player/media_player.dart';
 import 'package:start_screen/screens/splash/components/splash_content.dart';
-import 'package:start_screen/size_config.dart';
 
 class Body extends StatefulWidget {
   @override
@@ -64,7 +64,9 @@ class _BodyState extends State<Body> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: DefaultButton(
                         text: "Continue",
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushNamed(context, MediaPlayer.routeName);
+                        },
                       ),
                     ),
                     Spacer(),

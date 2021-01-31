@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:start_screen/routes.dart';
 import 'package:start_screen/screens/splash/splash_screen.dart';
 import 'theme.dart';
 
@@ -15,6 +16,8 @@ class MyApp extends StatelessWidget {
       title: 'Start Screen',
       theme: theme(),
       home: SplashScreen(),
+      initialRoute: SplashScreen.routeName,
+      routes: routes,
     );
   }
 }
