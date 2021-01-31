@@ -1,7 +1,6 @@
-import 'package:video_player/video_player.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-
-final String videoUrl = 'http://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_20mb.mp4';
+import 'package:just_audio/just_audio.dart';
 
 class MediaPlayer extends StatefulWidget {
   MediaPlayer({Key key}) : super(key: key);
@@ -13,19 +12,6 @@ class MediaPlayer extends StatefulWidget {
 }
 
 class _MediaPlayerState extends State<MediaPlayer> {
-  VideoPlayerController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.network(videoUrl);
-    _controller.initialize().then((_) {
-      // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-      print("Video initialized");
-      setState(() {});
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,17 +20,13 @@ class _MediaPlayerState extends State<MediaPlayer> {
           width: double.infinity,
           child: Column(
             children: <Widget>[
-              _controller.value.initialized
-                  ? AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    )
-                  : Container(),
+              Container(),
               Row(
                 children: <Widget>[
                   FlatButton(
-                    onPressed: () {
-                      _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                    onPressed: () async {
+                      await AudioService.start(
+                          backgroundTaskEntrypoint: _entrypoint);
                     },
                     child: Text("Play"),
                   ),
@@ -56,10 +38,62 @@ class _MediaPlayerState extends State<MediaPlayer> {
       ),
     );
   }
+}
 
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
+// Must be a top-level function
+void _entrypoint() => AudioServiceBackground.run(() => AudioPlayerTask());
+
+final String url =
+    'https://storage.googleapis.com/1a28da50-b6cc-11ea-9d3d-6b9876fb2fba/sermons/1ipwbC6H6vdNEreYlzyC';
+
+class AudioPlayerTask extends BackgroundAudioTask {
+  final _player = AudioPlayer(); // e.g. just_audio
+
+  // Implement callbacks here. e.g. onStart, onStop, onPlay, onPause
+
+  onStart(Map<String, dynamic> params) async {
+    final mediaItem = MediaItem(
+      id: url,
+      album: "David MacCallum",
+      title: "Dreaming of Heaven",
+    );
+    // Tell the UI and media notification what we're playing.
+    AudioServiceBackground.setMediaItem(mediaItem);
+    // Listen to state changes on the player...
+    _player.playerStateStream.listen((playerState) {
+      // ... and forward them to all audio_service clients.
+      AudioServiceBackground.setState(
+        playing: playerState.playing,
+        // Every state from the audio player gets mapped onto an audio_service state.
+        processingState: {
+          ProcessingState.idle: AudioProcessingState.none,
+          ProcessingState.loading: AudioProcessingState.connecting,
+          ProcessingState.buffering: AudioProcessingState.buffering,
+          ProcessingState.ready: AudioProcessingState.ready,
+          ProcessingState.completed: AudioProcessingState.completed,
+        }[playerState.processingState],
+        // Tell clients what buttons/controls should be enabled in the
+        // current state.
+        controls: [
+          playerState.playing ? MediaControl.pause : MediaControl.play,
+          MediaControl.stop,
+        ],
+      );
+    });
+    // Play when ready.
+    _player.play();
+    // Start loading something (will play when ready).
+    await _player.setUrl(mediaItem.id);
+  }
+
+  onPlay() => _player.play();
+  onPause() => _player.pause();
+  onSeekTo(Duration duration) => _player.seek(duration);
+  onSetSpeed(double speed) => _player.setSpeed(speed);
+  onStop() async {
+    // Stop and dispose of the player.
+    await _player.dispose();
+    // Shut down the background task.
+    await super.onStop();
   }
 }

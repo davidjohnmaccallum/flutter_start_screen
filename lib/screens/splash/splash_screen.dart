@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:start_screen/size_config.dart';
 
@@ -11,6 +12,6 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Scaffold(body: Body());
+    return AudioServiceWidget(child: Scaffold(body: Body()));
   }
 }
