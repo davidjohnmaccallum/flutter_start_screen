@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:start_screen/size_config.dart';
 
 class MediaPlayer extends StatefulWidget {
   MediaPlayer({Key key}) : super(key: key);
@@ -20,21 +21,98 @@ class _MediaPlayerState extends State<MediaPlayer> {
           width: double.infinity,
           child: Column(
             children: <Widget>[
-              Container(),
-              Row(
-                children: <Widget>[
-                  FlatButton(
-                    onPressed: () async {
-                      await AudioService.start(
-                          backgroundTaskEntrypoint: _entrypoint);
-                    },
-                    child: Text("Play"),
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    FlatButton(
+                      onPressed: () async {
+                        await AudioService.start(
+                            backgroundTaskEntrypoint: _entrypoint);
+                      },
+                      child: Text("Play"),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(5),
+                    topRight: Radius.circular(5),
                   ),
-                ],
-              )
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  height: getProportionateScreenHeight(60),
+                  child: MiniPlayer(
+                    image: 'assets/images/media_thumb.jpg',
+                    text: "Live to worship God",
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class MiniPlayer extends StatefulWidget {
+  const MiniPlayer({
+    Key key,
+    this.text,
+    this.image,
+    this.onPlay,
+    this.onPause,
+  }) : super(key: key);
+  final String text;
+  final String image;
+  final Function() onPlay;
+  final Function() onPause;
+
+  @override
+  _MiniPlayerState createState() => _MiniPlayerState();
+}
+
+class _MiniPlayerState extends State<MiniPlayer> {
+  bool isPlaying = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Image.asset(
+            widget.image,
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                widget.text,
+                overflow: TextOverflow.ellipsis,
+                style: new TextStyle(
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+            onPressed: isPlaying ? widget.onPause : widget.onPlay,
+          ),
+        ],
       ),
     );
   }
