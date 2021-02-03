@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:start_screen/background_audio_task/audio_player_task.dart';
 import 'package:start_screen/components/mini_player.dart';
+import 'package:start_screen/components/player.dart';
 import 'package:start_screen/size_config.dart';
 
 class MediaPlayer extends StatefulWidget {
@@ -62,12 +63,10 @@ class _MediaPlayerState extends State<MediaPlayer> {
                   ],
                 ),
                 child: AudioService.running
-                    ? SizedBox(
-                        height: getProportionateScreenHeight(60),
-                        child: MiniPlayer(
-                          image: 'assets/images/media_thumb.jpg',
-                          text: "Live to worship God",
-                        ),
+                    ? Player(
+                        image: 'assets/images/media_thumb.jpg',
+                        track: "Live to worship God",
+                        album: "Worship Series",
                       )
                     : Container(),
               ),
